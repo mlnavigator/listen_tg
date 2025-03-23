@@ -90,7 +90,12 @@ async def handler(event):
     link = await get_message_link(message)
     chat_id = prepare_id(event.chat_id)
 
-    chat_title = event.chat.title if event.chat is not None else sources.get(chat_id, "Неизвестный источник")
+    try:
+        chat_title = event.chat.title if event.chat is not None else sources.get(chat_id, "Неизвестный источник")
+    except Exception as e:
+        print('Ошибка при получении названия канала', e)
+        chat_title = "Неизвестный источник"
+
     msg = (f"[{message.date}]\n"
            f"Message ID: {message.id}\n"
             f"Источник: {chat_title} (ID: {event.chat_id})\n"
@@ -100,11 +105,9 @@ async def handler(event):
 
     # Проверяем, что сообщение является предложением на NLP
     filter_result = filter_is_nlp_offer(text)
+    msg = '\n' + json.dumps(filter_result, indent=4, ensure_ascii=False) + "\n\n" + msg
     if filter_result and 'is_ml_offer' in filter_result and filter_result['is_ml_offer']:
         print("Предложение на NLP обнаружено!")
-
-        msg = json.dumps(filter_result, indent=4, ensure_ascii=False) + "\n\n" + msg
-
         await send_to_target(msg)
 
     print(msg)
