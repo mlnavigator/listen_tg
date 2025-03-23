@@ -1,6 +1,11 @@
 import os
+from dotenv import load_dotenv
+
 
 basedir = os.path.dirname(os.path.abspath(__file__))
+if os.path.exists(os.path.join(basedir, 'assets/env')):
+    load_dotenv(os.path.join(basedir, 'assets/env'))
+
 app_name = os.environ['APP_NAME']
 
 # Настройки API - Получите на https://my.telegram.org

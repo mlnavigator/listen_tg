@@ -7,7 +7,9 @@ from telethon.tl.types import PeerChannel, Channel, PeerChat, PeerUser
 from config import basedir, app_name, api_id, api_hash, target_group_id, use_log_messages, use_only_targets
 from check_message import filter_is_nlp_offer
 
-client = TelegramClient(app_name, api_id, api_hash)
+session_file_path = os.path.join(basedir, 'assets/session.session')
+
+client = TelegramClient(session_file_path, api_id, api_hash)
 
 target_group = None
 
@@ -16,7 +18,7 @@ sources = dict()
 # Загрузка целевых каналов из файла
 targets = []
 try:
-    with open(os.path.join(basedir, 'targets.txt'), 'r') as fd:
+    with open(os.path.join(basedir, 'assets/targets.txt'), 'r') as fd:
         sources_raw = fd.read()
 
     for s in sources_raw.split('\n'):
@@ -109,7 +111,7 @@ async def handler(event):
 
     if use_log_messages:
         # Сохраняем в файл
-        with open(os.path.join(basedir, 'messages.txt'), 'a', encoding='utf-8') as f:
+        with open(os.path.join(basedir, 'assets/messages.txt'), 'a', encoding='utf-8') as f:
             f.write(msg)
 
 

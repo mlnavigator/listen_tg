@@ -1,0 +1,10 @@
+APP_NAME=
+TG_API_ID=
+TG_API_HASH=
+TG_TARGET_GROUP_ID=
+OPENROUTER_KEY=
+MODEL=
+# USE_LOG_MESSAGES=1 - if need save telegram messages to logs
+USE_LOG_MESSAGES=0
+# USE_ONLY_TARGETS=1 - if need listen message only from target channels from file targets.txt
+USE_ONLY_TARGETS=0
