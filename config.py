@@ -20,3 +20,5 @@ model = os.environ['MODEL']
 use_log_messages = (os.environ['USE_LOG_MESSAGES'] == '1')
 
 use_only_targets = (os.environ['USE_ONLY_TARGETS'] == '1')
+
+filter_short_messages_cnt = int(os.environ.get('FILTER_SHORT_MESSAGES'), 100)

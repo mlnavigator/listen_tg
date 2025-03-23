@@ -8,3 +8,5 @@ MODEL=
 USE_LOG_MESSAGES=0
 # USE_ONLY_TARGETS=1 - if need listen message only from target channels from file targets.txt
 USE_ONLY_TARGETS=0
+# messages shorter then FILTER_SHORT_MESSAGES are refused as non target for checking
+FILTER_SHORT_MESSAGES=100

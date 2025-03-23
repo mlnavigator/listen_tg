@@ -2,7 +2,7 @@ import requests
 import json
 from typing import Dict, Any
 
-from config import openrouter_api_key, app_name, model
+from config import openrouter_api_key, app_name, model, filter_short_messages_cnt
 
 
 def make_request(prompt: str) -> Dict[str, Any]:
@@ -29,9 +29,39 @@ def make_request(prompt: str) -> Dict[str, Any]:
     return res
 
 
-def filter_is_nlp_offer(text: str) -> Dict[str, Any]:
+def filter_euristics(text: str) -> bool:
+    if len(text) < filter_short_messages_cnt:
+        return False
+    if 'тебя заблокировали' in text.lower():
+        return False
+    if '[Нет текста]' == text.strip():
+        return False
+    if 'spam' in text:
+        return False
+    if 'deleted' in text:
+        return False
+    if 'removed' in text:
+        return False
+    if 'blocked' in text:
+        return False
+    if 'message' in text:
+        return False
+    if 'ban' in text:
+        return False
+    if 'user' in text:
+        return False
+    if 'kicked' in text:
+        return False
+    if 'спам' in text:
+        return False
+    if 'блокировка' in text:
+        return False
 
-    if len(text) < 20:
+    return True
+
+
+def filter_is_nlp_offer(text: str) -> Dict[str, Any]:
+    if not filter_euristics(text):
         return {'summary': text, 'keywords': '', 'offer_details': '', 'is_ml_offer': False}
 
     prompt = f"""Тебе на вход дается сообщение <message>. Это сообщение в социальной сети. 
