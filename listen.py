@@ -89,6 +89,8 @@ async def handler(event):
 
     link = await get_message_link(message)
     chat_id = prepare_id(event.chat_id)
+    if chat_id == target_group or event.chat_id == target_group:
+        return
 
     try:
         chat_title = event.chat.title if event.chat is not None else sources.get(chat_id, "Неизвестный источник")
