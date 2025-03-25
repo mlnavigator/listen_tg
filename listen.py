@@ -4,7 +4,7 @@ import json
 from telethon import TelegramClient, events
 from telethon.tl.types import PeerChannel, Channel, PeerChat, PeerUser
 
-from config import basedir, app_name, api_id, api_hash, target_group_id, use_log_messages, use_only_targets
+from config import basedir, api_id, api_hash, target_group_id, use_log_messages, use_only_targets
 from check_message import filter_is_nlp_offer
 
 session_file_path = os.path.join(basedir, 'assets/session.session')
@@ -33,6 +33,15 @@ def prepare_id(i):
     i = re.sub(r'^-100', '', i)
     i = re.sub(r'^-', '', i)
     return i
+
+
+def cut_text(text, length=1000):
+    """Обрезка текста до указанной длины"""
+    text = str(text)
+    if len(text) > length:
+        text = text[:length]
+        text += '...'
+    return text
 
 
 async def get_message_link(message):
@@ -76,22 +85,34 @@ async def send_to_target(text):
     await client.send_message(target_group, text)
 
 
-@client.on(events.NewMessage)
-async def handler(event):
-    global sources
+def filter_target(event) -> bool:
+    # Проверяем, что сообщение не из личного сообщения
+    if not str(event.chat_id).startswith('-'):
+        return False
     # Проверяем, что сообщение из целевого канала
     if use_only_targets and len(targets) > 0:
         if event.chat_id not in targets:
-            return
+            return False
+    # Проверяем, что сообщение не из целевой группы для репорта
+    chat_id = prepare_id(event.chat_id)
+    if chat_id == target_group or event.chat_id == target_group:
+        return False
+
+    return True
+
+
+@client.on(events.NewMessage)
+async def handler(event):
+    global sources
+
+    if not filter_target(event):
+        return
 
     message = event.message
     text = message.message or "[Нет текста]"
 
     link = await get_message_link(message)
     chat_id = prepare_id(event.chat_id)
-    if chat_id == target_group or event.chat_id == target_group:
-        return
-
     try:
         chat_title = event.chat.title if event.chat is not None else sources.get(chat_id, "Неизвестный источник")
     except Exception as e:
@@ -101,13 +122,18 @@ async def handler(event):
     msg = (f"[{message.date}]\n"
            f"Message ID: {message.id}\n"
             f"Источник: {chat_title} (ID: {event.chat_id})\n"
-            f"Сообщение:\n{text}\n"
+            f"Сообщение:\n{cut_text(text, 2000)}\n"
             f"Ссылка: {link}\n"
             f"{'=' * 40}\n")
 
     # Проверяем, что сообщение является предложением на NLP
     filter_result = filter_is_nlp_offer(text)
-    msg = '\n' + json.dumps(filter_result, indent=4, ensure_ascii=False) + "\n\n" + msg
+    filter_result_cut = dict()
+    for k,v in filter_result.items():
+        filter_result_cut[k] = cut_text(str(v), 500)
+
+    msg = '\n' + json.dumps(filter_result_cut, indent=4, ensure_ascii=False) + "\n\n" + msg
+
     if filter_result and 'is_ml_offer' in filter_result and filter_result['is_ml_offer']:
         print("Предложение на NLP обнаружено!")
         await send_to_target(msg)
