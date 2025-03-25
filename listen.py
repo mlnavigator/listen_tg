@@ -91,11 +91,11 @@ def filter_target(event) -> bool:
         return False
     # Проверяем, что сообщение из целевого канала
     if use_only_targets and len(targets) > 0:
-        if event.chat_id not in targets:
+        if str(event.chat_id) not in targets:
             return False
     # Проверяем, что сообщение не из целевой группы для репорта
     chat_id = prepare_id(event.chat_id)
-    if chat_id == target_group or event.chat_id == target_group:
+    if str(chat_id) == str(target_group_id) or str(event.chat_id) == str(target_group_id):
         return False
 
     return True
