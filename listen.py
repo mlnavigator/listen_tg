@@ -28,7 +28,7 @@ except Exception as e:
     print('Игнорируем список целевых каналов, слушаем все каналы')
 
 
-def prepare_id(i):
+def prepare_id(i) -> str:
     i = str(i)
     i = re.sub(r'^-100', '', i)
     i = re.sub(r'^-', '', i)
@@ -95,7 +95,8 @@ def filter_target(event) -> bool:
             return False
     # Проверяем, что сообщение не из целевой группы для репорта
     chat_id = prepare_id(event.chat_id)
-    if str(chat_id) == str(target_group_id) or str(event.chat_id) == str(target_group_id):
+    target_group_id_clean = prepare_id(target_group_id)
+    if str(chat_id).strip() == str(target_group_id_clean).strip() or str(event.chat_id).strip() == str(target_group_id).strip():
         return False
 
     return True
@@ -104,7 +105,6 @@ def filter_target(event) -> bool:
 @client.on(events.NewMessage)
 async def handler(event):
     global sources
-
     if not filter_target(event):
         return
 
